@@ -7,7 +7,11 @@ const daysField = document.querySelector('[data-days]');
 const hoursField = document.querySelector('[data-hours]');
 const minutesField = document.querySelector('[data-minutes]');
 const secondsField = document.querySelector('[data-seconds]');
-let timerInterval
+
+let timerInterval;
+
+startBtn.addEventListener("click", onStart);
+startBtn.disabled = true;
 
 flatpickr("#datetime-picker", { enableTime: true,
     dateFormat: "Y-m-d H:i",
@@ -15,23 +19,34 @@ flatpickr("#datetime-picker", { enableTime: true,
     defaultDate: new Date(),
     minuteIncrement: 1,
     onClose(selectedDates) {
+      if (selectedDates[0] <= Date.now()) {
+        window.alert("Please choose a date in the future");
+        inputeDate._flatpickr.setDate(new Date ())
+      } else {
+        startBtn.disabled = false
+      }
       console.log(selectedDates[0]);
     },});
-
-startBtn.addEventListener("click", onStart);
 
 function onStart() {
     timerInterval = setInterval(()=>{
         const dateNow = Date.now();
         const selectedDate = inputeDate._flatpickr.selectedDates[0].getTime();
         const diff = selectedDate - dateNow;
-        console.log(diff)
-        milisecondsToDHMS (diff)  
+        startBtn.disabled = true;
+        console.log(diff);
+        if (diff <= 0) {
+          clearInterval(timerInterval);
+          startBtn.disabled = true;
+          return
+        }
+        milisecondsToDHMS (diff);
+        
     },1000);
 }
 
 function milisecondsToDHMS(milliseconds) {
-    const seconds = Math.floor(milliseconds / 1000);
+  const seconds = Math.floor(milliseconds / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
@@ -40,9 +55,9 @@ function milisecondsToDHMS(milliseconds) {
   const remainingMinutes = minutes % 60;
   const remainingSeconds = seconds % 60;
 
-  daysField.textContent = days;
-  hoursField.textContent = remainingHours;
-  minutesField.textContent = remainingMinutes;
-  secondsField.textContent = remainingSeconds;
+  daysField.textContent = days.toString().padStart(2, '0');
+  hoursField.textContent = remainingHours.toString().padStart(2, '0');
+  minutesField.textContent = remainingMinutes.toString().padStart(2, '0');
+  secondsField.textContent = remainingSeconds.toString().padStart(2, '0');
 }
 
